@@ -24,6 +24,7 @@ nav { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
 .day-head { display: flex; justify-content: space-between; align-items: baseline; margin: 26px 0 8px; flex-wrap: wrap; gap: 8px; }
 .day-head h1 { margin: 0; font-size: 24px; }
 .day-nav { display: flex; gap: 14px; font-size: 13.5px; }
+.notice { background: var(--panel2); border: 1px solid var(--hi); border-radius: 8px; color: var(--hi); padding: 9px 14px; font-size: 13.5px; margin: 4px 0 18px; }
 
 .headlines { background: linear-gradient(135deg, #1a1f2e, #171a23); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin: 14px 0 26px; }
 .headlines h2 { margin: 0 0 10px; font-size: 17px; color: var(--hi); }

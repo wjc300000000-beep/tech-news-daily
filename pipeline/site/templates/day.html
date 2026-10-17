@@ -11,6 +11,10 @@
   </div>
 </div>
 
+{% if requested_day and requested_day != day %}
+<div class="notice">今日（{{ requested_day }}）暂无新增条目通过筛选，以下为最近一期（{{ day }}）的内容。</div>
+{% endif %}
+
 {% if headlines %}
 <section class="headlines">
   <h2>🔥 今日焦点</h2>

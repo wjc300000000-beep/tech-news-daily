@@ -52,8 +52,12 @@ def build(store: Store, out_dir: str | Path, day: str | None = None,
     env.filters["fmt_date"] = _fmt_date
     all_days = store.all_days()
     if not all_days:
-        log.warning("store is empty; nothing to build")
-    latest = day or (all_days[0] if all_days else None)
+        log.warning("store is empty; building an empty-state index only")
+    # The homepage must always exist. If the requested run day has no items
+    # (nothing new passed the filter), fall back to the most recent issue and
+    # say so in a banner, instead of producing a site without index.html.
+    requested_day = day
+    latest = day if day in all_days else (all_days[0] if all_days else day)
     categories = store.categories()
 
     # --- per-day pages -----------------------------------------------------
@@ -63,6 +67,7 @@ def build(store: Store, out_dir: str | Path, day: str | None = None,
         ctx = dict(site_title=SITE_TITLE, site_desc=SITE_DESC, day=d, items=items,
                    categories=categories, all_days=all_days, latest_day=latest,
                    root="" if d == latest else "../",
+                   requested_day=requested_day if d == latest else None,
                    headlines=headlines if d == latest else None,
                    generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"))
         target = out / "index.html" if d == latest else out / "days" / f"{d}.html"
@@ -70,6 +75,14 @@ def build(store: Store, out_dir: str | Path, day: str | None = None,
         # JSON export
         (out / "data" / f"items-{d}.json").write_text(
             json.dumps([it.to_dict() for it in items], ensure_ascii=False, indent=1),
+            encoding="utf-8")
+
+    if not all_days:  # empty store: still serve a valid homepage
+        (out / "index.html").write_text(env.get_template("day.html").render(
+            site_title=SITE_TITLE, site_desc=SITE_DESC, day=latest or "",
+            items=[], categories=[], all_days=[], latest_day=latest,
+            root="", requested_day=None, headlines=None,
+            generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")),
             encoding="utf-8")
 
     # --- category pages ----------------------------------------------------
