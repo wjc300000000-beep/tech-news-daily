@@ -59,11 +59,11 @@ jobs:
           echo "+ $CMD"
           $CMD
 
-      - name: Commit updated data & site back to repo
+      - name: Commit updated data back to repo
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ public/ 2>/dev/null || true
+          git add data/
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else
@@ -71,6 +71,13 @@ jobs:
             # 并发保护：先拉取远端可能的新提交再推送
             git pull --rebase origin "$GITHUB_REF_NAME" || true
             git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
+      - name: Verify site output exists
+        run: |
+          if [ ! -f public/index.html ]; then
+            echo "::error::public/index.html is missing — the pipeline produced no site"
+            exit 1
           fi
 
       - name: Setup Pages

@@ -196,14 +196,15 @@ def reprocess(args) -> None:
     store = Store(DATA_DIR / "store.db")
     day = args.date or (store.all_days() or [None])[0]
     if not day:
-        log.error("store is empty; nothing to reprocess")
         store.close()
-        return
+        log.error("store is empty; nothing to reprocess "
+                  "(restore data/store.db or run a full `run` first)")
+        raise SystemExit(1)
     items = store.items_for_day(day, include_dropped=True)
     if not items:
-        log.error("no items stored for %s", day)
         store.close()
-        return
+        log.error("no items stored for %s", day)
+        raise SystemExit(1)
     llm = LLMClient()
     if args.no_llm:
         llm.enabled = False

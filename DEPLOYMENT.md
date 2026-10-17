@@ -45,7 +45,7 @@
 - cron `0 0 * * *` 定时 + 手动触发；
 - 安装依赖（含 Playwright Chromium，支持 web 类型数据源）；
 - 跑完整流水线，生成 `public/`；
-- 把 `data/`（去重历史，保证明天不重复发今天的新闻）和 `public/` 提交回仓库；
+- 把 `data/`（去重历史，保证明天不重复发今天的新闻）提交回仓库；`public/` 是构建产物（已 gitignore），只进 Pages artifact；
 - 通过官方 `actions/deploy-pages` 部署到 Pages。
 
 ### 自定义域名
@@ -66,7 +66,7 @@
    - 环境变量：`LLM_API_BASE` / `LLM_API_KEY` / `LLM_MODEL`（Secret 类型）
 4. 定时更新两种方式任选：
    - **Pages Cron Jobs**：项目 Settings → Functions/Cron triggers 无构建钩子，用 Cloudflare 的 **Scheduled deploy hook**（Settings → Builds → Deploy hooks + Cron）每天触发重建；
-   - 或保持 GitHub Actions 每天提交 `public/`，Cloudflare Pages 检测到 push 自动重建部署（构建命令可改为直接 `cp -r public dist` 式的空构建）。
+   - 或由 GitHub Actions 每天提交 `data/`（状态变更），Cloudflare Pages 检测到 push 后用构建命令重新生成并部署。
 
 ## 方案三：Vercel
 

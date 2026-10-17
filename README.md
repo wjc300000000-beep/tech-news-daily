@@ -163,7 +163,7 @@ pip install -r requirements-playwright.txt && playwright install chromium
 
 ## 自动部署
 
-见 [DEPLOYMENT.md](DEPLOYMENT.md)。摘要：推到 GitHub → 仓库 Settings → Pages → Source 选 **GitHub Actions** → 配置 `LLM_API_KEY` secret（可选）→ 完事。`.github/workflows/daily-update.yml` 每天 UTC 0:00 自动跑全流程、把 `data/` 和 `public/` 提交回仓库并部署 Pages，也支持手动触发（Actions → daily-update → Run workflow）。
+见 [DEPLOYMENT.md](DEPLOYMENT.md)。摘要：推到 GitHub → 仓库 Settings → Pages → Source 选 **GitHub Actions** → 配置 `LLM_API_KEY` secret（可选）→ 完事。`.github/workflows/daily-update.yml` 每天 UTC 0:00 自动跑全流程、把 `data/`（去重历史）提交回仓库，并把生成的 `public/` 作为 Pages artifact 部署；也支持手动触发（Actions → daily-update → Run workflow）。
 
 ## 目录结构
 
