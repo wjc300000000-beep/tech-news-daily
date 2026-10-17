@@ -1,10 +1,10 @@
 {
  "day": "2026-10-17",
  "raw": 101,
- "deduped": 22,
- "after_gate1": 22,
- "published": 22,
- "dup_url": 79,
+ "deduped": 1,
+ "after_gate1": 1,
+ "published": 1,
+ "dup_url": 100,
  "dup_simhash": 0,
  "dup_semantic": 0,
  "llm": false
