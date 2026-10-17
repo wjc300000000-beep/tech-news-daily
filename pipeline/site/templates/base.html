@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ site_title }}{% endblock %}</title>
+<meta name="description" content="{{ site_desc }}">
+<link rel="stylesheet" href="{{ root }}style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="{{ root }}index.html">📡 {{ site_title }}</a>
+    <nav>
+      <a href="{{ root }}index.html">今日</a>
+      <a href="{{ root }}archive.html">归档</a>
+      <span class="nav-cats">
+        {% for c in categories %}<a class="chip" href="{{ root }}categories/{{ c }}.html">{{ c }}</a>{% endfor %}
+      </span>
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    由 GitHub Actions 每日自动生成 · 采集 → SimHash+语义去重 → LLM 摘要/分类/评分 → 静态站点
+    {% if generated_at %} · 本页生成于 {{ generated_at }}{% endif %}
+  </div>
+</footer>
+</body>
+</html>

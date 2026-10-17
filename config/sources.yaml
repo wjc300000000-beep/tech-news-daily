@@ -1,0 +1,80 @@
+# 数据源配置清单
+# type: rss（RSS/Atom 订阅） | github_trending（专用抓取器） | web（Playwright + CSS 选择器）
+# enabled: false 可临时停用某个源而不删除配置
+sources:
+  - name: "ScienceDaily"
+    url: "https://www.sciencedaily.com/rss/all.xml"
+    type: "rss"
+    category: "学术前沿"
+
+  - name: "Quanta Magazine"
+    url: "https://www.quantamagazine.org/feed/"
+    type: "rss"
+    category: "数学与自然科学"
+
+  - name: "麻省理工科技评论"
+    # mittrchina.com/rss 实际返回 SPA 的 HTML 而非 RSS（已核实）。
+    # 用 Playwright 渲染后按 CSS 选择器抓取文章列表。
+    # 首次使用请执行: pip install playwright && playwright install chromium
+    url: "https://www.mittrchina.com/"
+    type: "web"
+    category: "前沿科技"
+    enabled: true          # 本地未装 Playwright 时会自动跳过，不影响其他源
+    max_items: 20
+    selectors:
+      item: "a[href*='/article/']"
+      title: "h4, h3, .title, span"
+      link: "self"         # 占位：实际选择器需在浏览器里核对后调整（见 README）
+      summary: "p"
+
+  - name: "动点科技 TechNode"
+    # cn.technode.com/feed 被 Cloudflare 拦截（403，已核实）。
+    # 默认走英文主站 feed；如需中文版，将本条改为 type: web + Playwright。
+    url: "https://technode.com/feed/"
+    type: "rss"
+    category: "科技创投"
+
+  - name: "Hacker News"
+    # 用 frontpage 代替 newest：信噪比更高，条目更少更精
+    url: "https://hnrss.org/frontpage"
+    type: "rss"
+    category: "开发者社区"
+
+  - name: "GitHub Trending"
+    # 无官方 RSS；页面为服务端渲染，直接用内置 requests+BS4 抓取器
+    # （公共 RSSHub 实例不稳定，实测超时，故不依赖）
+    url: "https://github.com/trending"
+    type: "github_trending"
+    category: "开源项目"
+    since: "daily"
+
+  - name: "Ars Technica"
+    url: "https://feeds.arstechnica.com/arstechnica/index"
+    type: "rss"
+    category: "科技深度"
+
+  - name: "少数派"
+    url: "https://sspai.com/feed"
+    type: "rss"
+    category: "效率与生活"
+
+  - name: "Knowable Magazine"
+    # knowablemag.org 全站对非浏览器请求返回 403（已核实），需 Playwright。
+    # 安装 Playwright 后将 enabled 改为 true，并核对 selectors。
+    url: "https://knowablemag.org/news"
+    type: "web"
+    category: "学术前沿"
+    enabled: false
+    max_items: 20
+    selectors:
+      item: "article, .teaser, .card"
+      title: "h2, h3, .title"
+      link: "a"
+      summary: "p"
+
+  # - name: "Richard's favourite"
+  #   # TODO: 等待提供具体网站 URL。补充后取消注释并选择 type:
+  #   #   有 RSS -> type: rss；无 RSS -> type: web + selectors（或用 RSSAlchemy 自建源）
+  #   url: "https://example.com/feed"
+  #   type: "rss"
+  #   category: "待分类"

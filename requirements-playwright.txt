@@ -1,0 +1,2 @@
+# 可选：web 类型数据源（mittrchina / Knowable）与 JS 页面正文抓取
+playwright>=1.44

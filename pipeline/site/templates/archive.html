@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}归档 · {{ site_title }}{% endblock %}
+{% block content %}
+<h1>归档</h1>
+<ul class="archive-list">
+  {% for d in days %}
+  <li>
+    <a href="{{ root }}{% if d == latest_day %}index.html{% else %}days/{{ d }}.html{% endif %}">{{ d }}</a>
+    <span class="count">{{ day_counts[d] }} 条</span>
+  </li>
+  {% endfor %}
+</ul>
+{% if not days %}<p class="empty">尚无数据。</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ day }} · {{ site_title }}{% endblock %}
+{% block content %}
+<div class="day-head">
+  <h1>{{ day }} 日报</h1>
+  <div class="day-nav">
+    {% set i = all_days.index(day) if day in all_days else -1 %}
+    {% if i > 0 %}<a href="{{ root }}{% if all_days[i-1] == latest_day %}index.html{% else %}days/{{ all_days[i-1] }}.html{% endif %}">← 前一天</a>{% endif %}
+    {% if i >= 0 and i < all_days|length - 1 %}<a href="{{ root }}{% if all_days[i+1] == latest_day %}index.html{% else %}days/{{ all_days[i+1] }}.html{% endif %}">后一天 →</a>{% endif %}
+  </div>
+</div>
+
+{% if headlines %}
+<section class="headlines">
+  <h2>🔥 今日焦点</h2>
+  <ol class="headline-list">
+    {% for h in headlines %}
+    <li>
+      <a href="{{ h.item.url }}" target="_blank" rel="noopener">{{ h.item.title_cn or h.item.title }}</a>
+      <span class="score-badge s{{ (h.item.score / 2) | round(0, 'floor') | int }}">{{ '%.1f' % h.item.score }}</span>
+      {% if h.reason %}<span class="reason">{{ h.reason }}</span>{% endif %}
+      <span class="meta-line">{{ h.item.source }} · <a class="cat-link" href="{{ root }}categories/{{ h.item.category }}.html">{{ h.item.category }}</a></span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endif %}
+
+{% set grouped = {} %}
+{% for it in items %}{% if grouped.setdefault(it.category, []).append(it) %}{% endif %}{% endfor %}
+
+{% for cat in grouped %}
+<section class="cat-section" id="cat-{{ loop.index }}">
+  <h2><a href="{{ root }}categories/{{ cat }}.html">{{ cat }}</a> <span class="count">{{ grouped[cat]|length }}</span></h2>
+  <div class="cards">
+    {% for it in grouped[cat] %}
+    <article class="card imp-{{ it.importance }}">
+      <div class="card-top">
+        <span class="score-badge s{{ (it.score / 2) | round(0, 'floor') | int }}">{{ '%.1f' % it.score }}</span>
+        <span class="imp imp-{{ it.importance }}">{{ it.importance }}</span>
+      </div>
+      <h3><a href="{{ it.url }}" target="_blank" rel="noopener">{{ it.title_cn or it.title }}</a></h3>
+      {% if it.title_cn and it.title_cn != it.title %}<div class="orig-title">{{ it.title }}</div>{% endif %}
+      {% if it.summary %}<p class="summary">{{ it.summary }}</p>{% endif %}
+      <div class="meta-line">
+        <span class="src">{{ it.source }}</span>
+        {% if it.date %}<time>{{ it.date | fmt_date }}</time>{% endif %}
+        {% for t in it.tags %}<span class="tag">{{ t }}</span>{% endfor %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endfor %}
+
+{% if not items %}<p class="empty">当日没有通过评分阈值的条目。</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,38 @@
+# 全局设置
+# 站内链接全部为相对路径，部署在根域名或任意子路径（如 GitHub Pages 项目站）均可，无需配置
+
+collect:
+  # 只保留最近 N 小时内发布的条目（无日期的条目保留）；每日 cron 场景 48h 足够覆盖时区差
+  window_hours: 48
+  # 每个源单次最多保留条数（可在 sources.yaml 里按源覆盖 max_items）
+  default_max_items: 50
+
+categories:
+  - 技术进展
+  - 产品发布
+  - 行业动态
+  - 研究论文
+  - 开源项目
+  - 开发者社区
+  - 其他
+
+scoring:
+  # 低于该分数的条目不发布（LLM 0-10 评分，综合技术深度/新颖性/影响力）
+  min_score: 5.0
+  # 首页"今日焦点"条数
+  top_n: 10
+
+dedup:
+  # SimHash 汉明距离阈值（越小越严格）
+  simhash_threshold: 3
+  # 与最近 N 天的历史比对，避免旧闻重发
+  history_days: 7
+  # 语义向量去重的余弦相似度阈值
+  cosine_threshold: 0.90
+
+fulltext:
+  enabled: true
+  # 每次运行最多穿透抓取多少篇原文（控制耗时与对源站的压力）
+  max_items: 40
+  # JS 渲染页面用 Playwright 抓正文（需安装 playwright + chromium）
+  playwright: false

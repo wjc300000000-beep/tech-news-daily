@@ -1,0 +1,69 @@
+name: daily-update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'        # 每天 UTC 0:00 / 北京时间 8:00
+  workflow_dispatch:            # 支持在 Actions 页面手动触发
+
+permissions:
+  contents: write               # 提交 data/ 与 public/ 回仓库
+  pages: write                  # 部署 GitHub Pages
+  id-token: write               # Pages OIDC 部署所需
+
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt -r requirements-playwright.txt
+          playwright install --with-deps chromium
+
+      - name: Run pipeline (collect → dedup → LLM → site)
+        env:
+          # 在仓库 Settings → Secrets and variables → Actions 中配置。
+          # 未配置 LLM_API_KEY 时流水线仍可运行（自动降级为规则 fallback 模式）。
+          LLM_API_BASE: ${{ vars.LLM_API_BASE || 'https://api.deepseek.com/v1' }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-chat' }}
+          EMBEDDING_MODEL: ${{ vars.EMBEDDING_MODEL || 'text-embedding-3-small' }}
+        run: python -m pipeline.main run
+
+      - name: Commit updated data & site back to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ public/ config/ 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "content: daily update $(date -u +%F)"
+            # 并发保护：先拉取远端可能的新提交再推送
+            git pull --rebase origin "$GITHUB_REF_NAME" || true
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

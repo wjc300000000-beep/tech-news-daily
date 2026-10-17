@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ category }} · {{ site_title }}{% endblock %}
+{% block content %}
+<h1>分类：{{ category }} <span class="count">{{ items|length }} 条（近期）</span></h1>
+<div class="cards">
+  {% for it in items %}
+  <article class="card imp-{{ it.importance }}">
+    <div class="card-top">
+      <span class="score-badge s{{ (it.score / 2) | round(0, 'floor') | int }}">{{ '%.1f' % it.score }}</span>
+      <span class="imp imp-{{ it.importance }}">{{ it.importance }}</span>
+      <span class="day-chip"><a href="{{ root }}{% if it.day == latest_day %}index.html{% else %}days/{{ it.day }}.html{% endif %}">{{ it.day }}</a></span>
+    </div>
+    <h3><a href="{{ it.url }}" target="_blank" rel="noopener">{{ it.title_cn or it.title }}</a></h3>
+    {% if it.summary %}<p class="summary">{{ it.summary }}</p>{% endif %}
+    <div class="meta-line">
+      <span class="src">{{ it.source }}</span>
+      {% for t in it.tags %}<span class="tag">{{ t }}</span>{% endfor %}
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% if not items %}<p class="empty">该分类暂无条目。</p>{% endif %}
+{% endblock %}
