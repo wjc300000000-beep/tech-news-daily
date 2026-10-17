@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0        # 完整历史，保证运行时 pull --rebase 可靠
 
       - uses: actions/setup-python@v5
         with:
@@ -47,7 +47,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ public/ config/ 2>/dev/null || true
+          git add data/ public/ 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "No changes to commit."
           else

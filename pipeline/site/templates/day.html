@@ -4,9 +4,10 @@
 <div class="day-head">
   <h1>{{ day }} 日报</h1>
   <div class="day-nav">
+    {# all_days is sorted newest-first: index-1 is the newer day, index+1 the older one #}
     {% set i = all_days.index(day) if day in all_days else -1 %}
-    {% if i > 0 %}<a href="{{ root }}{% if all_days[i-1] == latest_day %}index.html{% else %}days/{{ all_days[i-1] }}.html{% endif %}">← 前一天</a>{% endif %}
-    {% if i >= 0 and i < all_days|length - 1 %}<a href="{{ root }}{% if all_days[i+1] == latest_day %}index.html{% else %}days/{{ all_days[i+1] }}.html{% endif %}">后一天 →</a>{% endif %}
+    {% if i >= 0 and i < all_days|length - 1 %}<a href="{{ root }}days/{{ all_days[i+1] }}.html">← 前一天</a>{% endif %}
+    {% if i > 0 %}<a href="{{ root }}{% if all_days[i-1] == latest_day %}index.html{% else %}days/{{ all_days[i-1] }}.html{% endif %}">后一天 →</a>{% endif %}
   </div>
 </div>
 

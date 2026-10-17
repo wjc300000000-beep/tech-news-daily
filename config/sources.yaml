@@ -13,19 +13,14 @@ sources:
     category: "数学与自然科学"
 
   - name: "麻省理工科技评论"
-    # mittrchina.com/rss 实际返回 SPA 的 HTML 而非 RSS（已核实）。
-    # 用 Playwright 渲染后按 CSS 选择器抓取文章列表。
-    # 首次使用请执行: pip install playwright && playwright install chromium
-    url: "https://www.mittrchina.com/"
-    type: "web"
+    # mittrchina.com/rss 返回的是 SPA 的 HTML 而非 RSS（已核实）。
+    # 采用其公开免鉴权 JSON API 直采（已实测，见 pipeline/collectors/mittrchina.py）。
+    # 备选方案：RSSHub 路由 https://rsshub.app/mittrchina/index
+    # （公共实例不稳定，可换成 https://rsshub.rssforever.com/mittrchina/index，type 改回 rss）
+    url: "https://apii.web.mittrchina.com/information/index"
+    type: "mittrchina"
     category: "前沿科技"
-    enabled: true          # 本地未装 Playwright 时会自动跳过，不影响其他源
-    max_items: 20
-    selectors:
-      item: "a[href*='/article/']"
-      title: "h4, h3, .title, span"
-      link: "self"         # 占位：实际选择器需在浏览器里核对后调整（见 README）
-      summary: "p"
+    max_pages: 5           # 每页 4 条，按时间倒序
 
   - name: "动点科技 TechNode"
     # cn.technode.com/feed 被 Cloudflare 拦截（403，已核实）。
@@ -59,18 +54,12 @@ sources:
     category: "效率与生活"
 
   - name: "Knowable Magazine"
-    # knowablemag.org 全站对非浏览器请求返回 403（已核实），需 Playwright。
-    # 安装 Playwright 后将 enabled 改为 true，并核对 selectors。
-    url: "https://knowablemag.org/news"
-    type: "web"
+    # 该刊已从 knowablemag.org 迁移到 knowablemagazine.org；旧域名全站 403（WAF），
+    # 新域名 /rss 可直连（已实测 HTTP 200 + 有效 RSS，20 条）
+    url: "https://knowablemagazine.org/rss"
+    type: "rss"
     category: "学术前沿"
-    enabled: false
-    max_items: 20
-    selectors:
-      item: "article, .teaser, .card"
-      title: "h2, h3, .title"
-      link: "a"
-      summary: "p"
+    window_hours: 168      # 周更刊物，放宽到 7 天时间窗口，否则每日抓取很难命中
 
   # - name: "Richard's favourite"
   #   # TODO: 等待提供具体网站 URL。补充后取消注释并选择 type:

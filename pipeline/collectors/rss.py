@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from datetime import datetime, timezone
 
 import feedparser
@@ -35,10 +36,20 @@ def _parse_date(entry) -> str:
 def collect(source: dict, timeout: int = 30) -> list[NewsItem]:
     """source: {name, url, category, ...} from sources.yaml"""
     url = source["url"]
-    try:
-        feed = feedparser.parse(url, agent=UA, request_headers={"Accept": "*/*"})
-    except Exception as e:
-        log.error("[%s] feed fetch failed: %s", source["name"], e)
+    feed = None
+    for attempt in range(3):   # transient SSL/timeout failures are common in CI
+        try:
+            feed = feedparser.parse(url, agent=UA, request_headers={"Accept": "*/*"})
+            if feed.entries:
+                break
+            log.warning("[%s] feed returned no entries (attempt %d/3)",
+                        source["name"], attempt + 1)
+        except Exception as e:
+            log.warning("[%s] feed fetch failed (attempt %d/3): %s",
+                        source["name"], attempt + 1, e)
+        time.sleep(3 * (attempt + 1))
+    if feed is None:
+        log.error("[%s] feed fetch failed permanently", source["name"])
         return []
     if feed.bozo and not feed.entries:
         log.error("[%s] unparsable feed: %s", source["name"],

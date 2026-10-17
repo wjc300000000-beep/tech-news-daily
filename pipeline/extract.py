@@ -14,6 +14,9 @@ log = logging.getLogger("extract")
 MIN_SUMMARY_LEN = 200      # below this, try to fetch fulltext
 MAX_FULLTEXT_CHARS = 6000  # cap what we keep for the LLM
 FETCH_DELAY = 1.0          # be polite between requests
+FETCH_TIMEOUT = 20
+UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+      "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36")
 
 
 def needs_fulltext(item) -> bool:
@@ -24,15 +27,25 @@ def fetch_fulltext(url: str, use_playwright: bool = False) -> str:
     try:
         if use_playwright:
             return _fetch_with_playwright(url)
-        import trafilatura
-        text = trafilatura.fetch_url(url) or ""
-        extracted = trafilatura.extract(
-            text, url=url, include_comments=False, include_tables=True,
-            favor_recall=True) or ""
-        return extracted[:MAX_FULLTEXT_CHARS]
+        return _fetch_with_requests(url)
     except Exception as e:
         log.debug("fulltext fetch failed for %s: %s", url, e)
         return ""
+
+
+def _fetch_with_requests(url: str) -> str:
+    """Fetch with a browser User-Agent (many sites 405 the default clients),
+    then let trafilatura strip the HTML down to the article text."""
+    import requests
+    import trafilatura
+    resp = requests.get(url, headers={"User-Agent": UA, "Accept-Language": "en,zh-CN;q=0.8"},
+                        timeout=FETCH_TIMEOUT, allow_redirects=True)
+    if resp.status_code != 200 or not resp.content:
+        return ""
+    extracted = trafilatura.extract(
+        resp.text, url=url, include_comments=False, include_tables=True,
+        favor_recall=True) or ""
+    return extracted[:MAX_FULLTEXT_CHARS]
 
 
 def _fetch_with_playwright(url: str) -> str:

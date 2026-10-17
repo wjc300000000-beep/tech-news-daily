@@ -70,7 +70,7 @@ pip install -r requirements-playwright.txt && playwright install chromium
 
 ### 2. 添加数据源（`config/sources.yaml`）
 
-三种采集类型：
+内置四种采集器（`type` 字段）：
 
 ```yaml
 # ① RSS/Atom（首选，最稳定）
@@ -98,14 +98,36 @@ pip install -r requirements-playwright.txt && playwright install chromium
     link: "a"              # 容器内链接（href）
     summary: "p"           # 可选：摘要
     date: "time"           # 可选：日期
+
+# ④ MIT 科技评论中文版专用采集器（站点无 RSS，直采其公开 JSON API）
+- name: "麻省理工科技评论"
+  url: "https://apii.web.mittrchina.com/information/index"
+  type: "mittrchina"
+  category: "前沿科技"
+  max_pages: 3
 ```
 
 找不到 RSS 的网站，优先尝试：
-1. **RSSHub**（https://docs.rsshub.app/）——已有上千站点的现成路由，把路由地址填进 `url` 即可；
+1. **RSSHub**（https://docs.rsshub.app/）——已有上千站点的现成路由，把路由地址填进 `url` 即可（公共实例不稳定，可自建或用镜像实例）；
 2. **RSSAlchemy**（https://github.com/Egor3f/rssalchemy）——自托管，用 CSS 选择器把任意网站转成标准 RSS；
 3. 都不行再写 `type: web` + Playwright 选择器。
 
-每个源可设 `enabled: false` 临时停用、`max_items` 限制单次条数。
+每个源可设 `enabled: false` 临时停用、`max_items` 限制单次条数、`window_hours` 覆盖全局时间窗口（如周更刊物放宽到 168 小时）。
+
+#### 当前数据源核查结论（9 个已接入并实测，1 个待接入）
+
+| 源 | 接入方式 | 备注 |
+|:--|:--|:--|
+| ScienceDaily | RSS `sciencedaily.com/rss/all.xml` | 直连可用 |
+| Quanta Magazine | RSS `quantamagazine.org/feed/` | 直连可用 |
+| 麻省理工科技评论中文版 | `type: mittrchina`（JSON API） | 无真 RSS（/rss 返回 SPA HTML）；备选 RSSHub 路由 `/mittrchina/index` |
+| 动点科技 TechNode | RSS `technode.com/feed/` | **中文站 cn.technode.com/feed 被 Cloudflare 拦截(403)**，故改用英文主站 feed |
+| Hacker News | RSS `hnrss.org/frontpage` | 用 frontpage 替代 newest，信噪比更高 |
+| GitHub Trending | `type: github_trending` | 无 RSS，页面服务端渲染直接抓取（不依赖公共 RSSHub） |
+| Ars Technica | RSS feeds 直连 | 注意：文章正文页对非浏览器客户端返回 405，正文穿透会自动跳过（RSS 摘要仍可用） |
+| 少数派 | RSS `sspai.com/feed` | 直连可用 |
+| Knowable Magazine | RSS `knowablemagazine.org/rss` | **站点已从 knowablemag.org 迁移到新域名**，旧域名全站 403，新域名 RSS 直连可用 |
+| Richard's favourite | 待接入 | 需要具体网站 URL（配置里已留注释占位） |
 
 ### 3. 修改分类与评分规则（`config/settings.yaml`）
 

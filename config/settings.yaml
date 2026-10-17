@@ -34,5 +34,7 @@ fulltext:
   enabled: true
   # 每次运行最多穿透抓取多少篇原文（控制耗时与对源站的压力）
   max_items: 40
-  # JS 渲染页面用 Playwright 抓正文（需安装 playwright + chromium）
+  # 用 Playwright 渲染页面后抓正文（需安装 playwright + chromium）。
+  # 适用于两类情况：① JS 渲染的页面；② 反爬站点（如 Ars Technica 文章页对
+  # 非浏览器客户端统一返回 405）。开启后每篇约多耗 3-5 秒，按需使用。
   playwright: false

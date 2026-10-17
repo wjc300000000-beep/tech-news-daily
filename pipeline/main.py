@@ -39,6 +39,20 @@ DATA_DIR = ROOT / "data"
 OUT_DIR = ROOT / "public"
 
 
+def load_dotenv(path: Path = ROOT / ".env") -> None:
+    """Minimal .env loader (no extra dependency); real env vars take precedence."""
+    if not path.exists():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key, value = key.strip(), value.strip().strip("'\"")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
 def load_config() -> tuple[list[dict], dict]:
     sources = yaml.safe_load((CONFIG_DIR / "sources.yaml").read_text(encoding="utf-8"))
     settings = yaml.safe_load((CONFIG_DIR / "settings.yaml").read_text(encoding="utf-8"))
@@ -77,10 +91,11 @@ def collect_all(sources: list[dict], window_hours: int = 48,
             log.error("[%s] collector crashed: %s", src.get("name"), e)
             continue
         cap = int(src.get("max_items", default_cap))
-        fresh = [it for it in got[:cap] if _within_window(it, window_hours)]
+        window = int(src.get("window_hours", window_hours))   # per-source override
+        fresh = [it for it in got[:cap] if _within_window(it, window)]
         if len(got) != len(fresh):
             log.info("[%s] %d collected -> %d after cap(%d)/window(%dh)",
-                     src.get("name"), len(got), len(fresh), cap, window_hours)
+                     src.get("name"), len(got), len(fresh), cap, window)
         items.extend(fresh)
     log.info("collected %d raw items from %d sources", len(items), len(sources))
     return items
@@ -161,6 +176,7 @@ def build_only(args) -> None:
 
 
 def main() -> None:
+    load_dotenv()
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname).1s %(name)s: %(message)s",

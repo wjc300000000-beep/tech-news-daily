@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import re
+import time
 from datetime import datetime, timezone
 
 import requests
@@ -23,12 +24,20 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
 def collect(source: dict, timeout: int = 30) -> list[NewsItem]:
     url = source.get("url", "https://github.com/trending")
     since = source.get("since", "daily")
-    try:
-        resp = requests.get(url, params={"since": since}, headers={"User-Agent": UA},
-                            timeout=timeout)
-        resp.raise_for_status()
-    except Exception as e:
-        log.error("[GitHub Trending] fetch failed: %s", e)
+    resp = None
+    for attempt in range(3):   # github.com occasionally times out from CI runners
+        try:
+            resp = requests.get(url, params={"since": since},
+                                headers={"User-Agent": UA}, timeout=timeout)
+            resp.raise_for_status()
+            break
+        except Exception as e:
+            log.warning("[GitHub Trending] fetch failed (attempt %d/3): %s",
+                        attempt + 1, e)
+            resp = None
+            time.sleep(3 * (attempt + 1))
+    if resp is None:
+        log.error("[GitHub Trending] fetch failed permanently")
         return []
 
     soup = BeautifulSoup(resp.text, "html.parser")
