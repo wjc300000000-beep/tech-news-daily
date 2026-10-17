@@ -171,7 +171,13 @@ def run(args) -> None:
 def build_only(args) -> None:
     _, settings = load_config()
     store = Store(DATA_DIR / "store.db")
-    site_build.build(store, OUT_DIR, day=args.date)
+    day = args.date or (store.all_days() or [""])[0]
+    items = store.items_for_day(day) if day else []
+    llm = LLMClient()
+    llm.enabled = False   # score-ranked headlines only; no API calls on rebuild
+    headlines = gates.gate3(items, llm,
+                            top_n=settings.get("scoring", {}).get("top_n", 10))
+    site_build.build(store, OUT_DIR, day=args.date, headlines=headlines)
     store.close()
 
 
