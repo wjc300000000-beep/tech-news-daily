@@ -50,6 +50,7 @@ pip install -r requirements-playwright.txt && playwright install chromium
 | `python -m pipeline.main run --no-fulltext` | 跳过原文穿透抓取（更快） |
 | `python -m pipeline.main run --no-llm` | 强制规则 fallback（不用 API 额度） |
 | `python -m pipeline.main run --score-threshold 6.5` | 临时覆盖评分阈值 |
+| `python -m pipeline.main reprocess [--date YYYY-MM-DD]` | **只重跑某期已有条目的 LLM 处理**（不采集；刚配置好 API Key 时用它把最近一期重新翻译/评分，普通 `run` 会因判重而发布不出内容） |
 | `python -m pipeline.main build` | 只用已有数据库重建网站 |
 
 每次 `run` 会在 `data/run-<日期>.json` 写入运行统计（采集数/去重数/发布数），便于检查。

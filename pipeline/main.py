@@ -185,6 +185,50 @@ def build_only(args) -> None:
     store.close()
 
 
+def reprocess(args) -> None:
+    """Re-run only the processing layer (gates 2+3) on a stored issue.
+
+    Useful right after configuring LLM_API_KEY: existing fallback-processed
+    items get Chinese titles/summaries/categories/scores without re-collecting
+    (a normal `run` would see them as duplicates and publish nothing new).
+    """
+    _, settings = load_config()
+    store = Store(DATA_DIR / "store.db")
+    day = args.date or (store.all_days() or [None])[0]
+    if not day:
+        log.error("store is empty; nothing to reprocess")
+        store.close()
+        return
+    items = store.items_for_day(day, include_dropped=True)
+    if not items:
+        log.error("no items stored for %s", day)
+        store.close()
+        return
+    llm = LLMClient()
+    if args.no_llm:
+        llm.enabled = False
+    categories = settings.get("categories",
+                              ["技术进展", "产品发布", "行业动态", "研究论文", "开源项目", "其他"])
+    log.info("reprocessing %d items of %s (%s)", len(items), day,
+             "llm" if llm.enabled else "fallback")
+    gates.gate2(items, llm, categories)
+    threshold = float(args.score_threshold
+                      if args.score_threshold is not None
+                      else settings.get("scoring", {}).get("min_score", 5.0))
+    for it in items:
+        it.issue_day = day
+        store.upsert(it, dropped=(it.score < threshold))
+    store.commit()
+    passed = [it for it in items if it.score >= threshold]
+    headlines = gates.gate3(passed, llm,
+                            top_n=settings.get("scoring", {}).get("top_n", 10))
+    site_build.build(store, OUT_DIR, day=day, headlines=headlines)
+    store.close()
+    print(json.dumps({"reprocessed": day, "items": len(items),
+                      "published": len(passed), "llm": llm.enabled},
+                     ensure_ascii=False))
+
+
 def main() -> None:
     load_dotenv()
     logging.basicConfig(
@@ -207,6 +251,13 @@ def main() -> None:
     p_build = sub.add_parser("build", help="rebuild site from existing store")
     p_build.add_argument("--date")
     p_build.set_defaults(fn=build_only)
+
+    p_re = sub.add_parser("reprocess",
+                          help="re-run LLM processing on a stored issue (no collection)")
+    p_re.add_argument("--date", help="issue date to reprocess (default: latest)")
+    p_re.add_argument("--no-llm", action="store_true")
+    p_re.add_argument("--score-threshold", type=float, default=None)
+    p_re.set_defaults(fn=reprocess)
 
     args = ap.parse_args()
     args.fn(args)

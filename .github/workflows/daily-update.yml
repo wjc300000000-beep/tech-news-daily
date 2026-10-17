@@ -4,6 +4,16 @@ on:
   schedule:
     - cron: '0 0 * * *'        # 每天 UTC 0:00 / 北京时间 8:00
   workflow_dispatch:            # 支持在 Actions 页面手动触发
+    inputs:
+      task:
+        description: "run = 采集+处理+建站；reprocess = 只重跑某期已有条目的 LLM 处理（配置 Key 后用）"
+        type: choice
+        options: [run, reprocess]
+        default: run
+      date:
+        description: "reprocess 的目标期号（YYYY-MM-DD，留空 = 最近一期）"
+        required: false
+        default: ""
 
 permissions:
   contents: write               # 提交 data/ 与 public/ 回仓库
@@ -41,7 +51,13 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: ${{ vars.LLM_MODEL || 'deepseek-chat' }}
           EMBEDDING_MODEL: ${{ vars.EMBEDDING_MODEL || 'text-embedding-3-small' }}
-        run: python -m pipeline.main run
+        run: |
+          TASK="${{ inputs.task || 'run' }}"
+          DATE="${{ inputs.date }}"
+          CMD="python -m pipeline.main $TASK"
+          if [ -n "$DATE" ]; then CMD="$CMD --date $DATE"; fi
+          echo "+ $CMD"
+          $CMD
 
       - name: Commit updated data & site back to repo
         run: |

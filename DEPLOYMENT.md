@@ -9,6 +9,14 @@
 - Pages 源已设为 **GitHub Actions**；每天 UTC 0:00（北京时间 8:00）自动运行，
   也可在 Actions → daily-update → **Run workflow** 手动触发。
 
+### 配置 API Key 之后
+
+1. 添加 Secret `LLM_API_KEY`（见上方链接）。
+2. Actions → daily-update → **Run workflow** → task 选 **reprocess**（date 留空 = 最近一期）。
+   这样会把最近一期已有的全部条目重新做中文标题/摘要/分类/AI 评分并重新部署——
+   直接选 `run` 不会有效果，因为当期的条目都已入库会被判重、没有新增内容。
+3. 之后每天定时运行自动生效。
+
 ## 方案一：GitHub Pages（推荐，仓库已内置全部配置）
 
 ### 步骤
