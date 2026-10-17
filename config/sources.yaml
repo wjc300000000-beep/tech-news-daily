@@ -60,10 +60,3 @@ sources:
     type: "rss"
     category: "学术前沿"
     window_hours: 168      # 周更刊物，放宽到 7 天时间窗口，否则每日抓取很难命中
-
-  # - name: "Richard's favourite"
-  #   # TODO: 等待提供具体网站 URL。补充后取消注释并选择 type:
-  #   #   有 RSS -> type: rss；无 RSS -> type: web + selectors（或用 RSSAlchemy 自建源）
-  #   url: "https://example.com/feed"
-  #   type: "rss"
-  #   category: "待分类"

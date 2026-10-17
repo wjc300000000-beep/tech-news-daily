@@ -114,7 +114,7 @@ pip install -r requirements-playwright.txt && playwright install chromium
 
 每个源可设 `enabled: false` 临时停用、`max_items` 限制单次条数、`window_hours` 覆盖全局时间窗口（如周更刊物放宽到 168 小时）。
 
-#### 当前数据源核查结论（9 个已接入并实测，1 个待接入）
+#### 当前数据源核查结论（9 个已接入并实测）
 
 | 源 | 接入方式 | 备注 |
 |:--|:--|:--|
@@ -127,7 +127,6 @@ pip install -r requirements-playwright.txt && playwright install chromium
 | Ars Technica | RSS feeds 直连 | 注意：文章正文页对非浏览器客户端返回 405，正文穿透会自动跳过（RSS 摘要仍可用） |
 | 少数派 | RSS `sspai.com/feed` | 直连可用 |
 | Knowable Magazine | RSS `knowablemagazine.org/rss` | **站点已从 knowablemag.org 迁移到新域名**，旧域名全站 403，新域名 RSS 直连可用 |
-| Richard's favourite | 待接入 | 需要具体网站 URL（配置里已留注释占位） |
 
 ### 3. 修改分类与评分规则（`config/settings.yaml`）
 
