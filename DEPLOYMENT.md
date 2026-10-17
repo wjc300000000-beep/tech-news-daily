@@ -1,5 +1,14 @@
 # 部署说明
 
+## 当前部署实例（已配置完成）
+
+- **仓库**：https://github.com/wjc300000000-beep/tech-news-daily
+- **线上站点**：https://wjc300000000-beep.github.io/tech-news-daily/
+- **填写 API Key**：https://github.com/wjc300000000-beep/tech-news-daily/settings/secrets/actions
+  （New repository secret → Name: `LLM_API_KEY`）
+- Pages 源已设为 **GitHub Actions**；每天 UTC 0:00（北京时间 8:00）自动运行，
+  也可在 Actions → daily-update → **Run workflow** 手动触发。
+
 ## 方案一：GitHub Pages（推荐，仓库已内置全部配置）
 
 ### 步骤

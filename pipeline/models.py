@@ -37,13 +37,20 @@ class NewsItem:
     merged_into: str = ""            # url of the canonical item if merged
     duplicate_of: str = ""
 
+    # --- issue grouping ---
+    # A daily run is one "issue": every item published in that run belongs to
+    # the issue date, regardless of its publish timestamp. Without this, a run
+    # at UTC 0:00 would put nearly everything on the previous day's page and
+    # leave the homepage (the newest day) nearly empty.
+    issue_day: str = ""
+
     @property
     def id(self) -> str:
         return hashlib.sha1(self.url.encode("utf-8")).hexdigest()[:16]
 
     @property
     def day(self) -> str:
-        return (self.date or self.collected_at)[:10]
+        return self.issue_day or (self.date or self.collected_at)[:10]
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)

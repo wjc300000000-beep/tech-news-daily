@@ -141,6 +141,11 @@ def run(args) -> None:
     threshold = float(args.score_threshold
                       if args.score_threshold is not None
                       else settings.get("scoring", {}).get("min_score", 5.0))
+    # One run = one issue: group every item under the issue date, not the UTC
+    # publish date (otherwise a UTC-0:00 run leaves the homepage empty).
+    day = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    for it in kept:
+        it.issue_day = day
     passed = [it for it in kept if it.score >= threshold]
     for it in kept:
         emb = dstats.get("embeddings", {}).get(it.url)
@@ -148,7 +153,6 @@ def run(args) -> None:
     log.info("score filter (>= %.1f): %d -> %d items", threshold, len(kept), len(passed))
 
     # 7. gate 3: headlines ------------------------------------------------------
-    day = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     headlines = gates.gate3(passed, llm,
                             top_n=settings.get("scoring", {}).get("top_n", 10))
     store.commit()
