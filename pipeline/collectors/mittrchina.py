@@ -47,10 +47,11 @@ def collect(source: dict, timeout: int = 30) -> list[NewsItem]:
             title = (it.get("name") or "").strip()
             if not title:
                 continue
-            url = (it.get("article_url") or "").strip()
-            if not url:
-                url = f"https://www.mittrchina.com/news/detail/{it.get('id')}"
-            url = url.replace("http://", "https://", 1)
+            # The API's article_url field can point to a dead route on
+            # sciphi.cn (verified 2026-10-18: that SPA has no /article/view
+            # route and sciphi's own API has no such article). The source
+            # site's own detail page is the reliable link.
+            url = f"https://www.mittrchina.com/news/detail/{it.get('id')}"
             summary = (it.get("summary") or "").strip()
             if it.get("authors"):
                 summary = f"作者：{it['authors']}。{summary}"
