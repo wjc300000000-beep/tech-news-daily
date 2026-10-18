@@ -35,7 +35,10 @@ def run(items: list[NewsItem], store, history_days: int = HISTORY_DAYS,
         if store.url_exists(it.url) or any(u.url == it.url for u in unique) \
                 or any(u.url == it.url for u in batch):
             stats["exact_url"] += 1
-            store.upsert(it, duplicate=True)
+            # IMPORTANT: do not upsert here. An existing row may already be
+            # published (duplicate=0); overwriting it with duplicate=1 would
+            # silently remove it from the archive on every re-collection.
+            continue
             continue
         batch.append(it)
 
