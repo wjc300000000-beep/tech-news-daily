@@ -1,0 +1,11 @@
+{
+ "day": "2026-11-11",
+ "raw": 117,
+ "deduped": 94,
+ "after_gate1": 50,
+ "published": 49,
+ "dup_url": 23,
+ "dup_simhash": 0,
+ "dup_semantic": 0,
+ "llm": true
+}
